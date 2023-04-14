@@ -24,16 +24,21 @@ class WebhookController < ApplicationController
       when Line::Bot::Event::Message
         case event.type
         when Line::Bot::Event::MessageType::Text
-          message = {
-            type: 'text',
-            text: event.message['text']
-          }
-          client.reply_message(event['replyToken'], message)
-        when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
-          response = client.get_message_content(event.message['id'])
-          tf = Tempfile.open("content")
-          tf.write(response.body)
-        end
+          if event.message['text'] == 'タスク'
+            user_id = event['source']['userId']
+            task = ChallengeTask.where(user_id: user_id).order('RANDOM()').first
+
+            # 後で書く→ Flex Messageの作成
+	    
+	    if task.present?
+              message = {type:'text', text: 'タスク：#{task.content'}
+            else
+              message = {type: 'text', text: '本日のタスクはありません。'}
+            end
+	    
+
+            client.reply_message(event['replyToken'], message)
+          end
       end
     }
     head :ok
