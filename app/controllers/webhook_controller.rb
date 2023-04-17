@@ -20,27 +20,108 @@ class WebhookController < ApplicationController
 
     events = client.parse_events_from(body)
     events.each { |event|
-      case event
-      when Line::Bot::Event::Message
-        case event.type
-        when Line::Bot::Event::MessageType::Text
-          if event.message['text'] == 'タスク'
-            user_id = event['source']['userId']
-            task = ChallengeTask.where(user_id: user_id).order('RANDOM()').first
+    case event
+    when Line::Bot::Event::Message
+      task = ChallengeTask.order('RANDOM()').first
+      case event.type
+      when Line::Bot::Event::MessageType::Text
+        if event.message['text'] == 'タスク'
+          message = {
+            type:'flex',
+            altText:'今回のタスク',
+            contents:flex_message
+            
+          }
+          message[:contents][:body][:contents] << {
+            type:'text',
+            text:task.content,
+            align:'center'
+          }
 
-            # 後で書く→ Flex Messageの作成
-	    
-	    if task.present?
-              message = {type:'text', text: 'タスク：#{task.content'}
-            else
-              message = {type: 'text', text: '本日のタスクはありません。'}
-            end
-	    
-
-            client.reply_message(event['replyToken'], message)
-          end
+          client.reply_message(event['replyToken'], message)
+        end
+      
       end
-    }
-    head :ok
+
+      when Line::Bot::Event::Postback
+        case event['postback']['data']
+        when 'complete'
+          message = {
+            type:'text',
+            text:"タスクを達成しました！\nおめでとうございます！！"
+          }
+          client.reply_message(event['replyToken'], message)
+        when 'incomplete'
+          message = {
+            type:'text',
+            text:"タスクは達成されませんでした…。\nそんな日もあります\n次はがんばりましょう！"
+          }
+          client.reply_message(event['replyToken'], message)
+      end
+    end
+  }
+  head :ok
   end
+
+  def flex_message
+    {
+      "type": "bubble",
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "今回のタスク",
+            "weight": "bold",
+            "size": "xl",
+            "align": "center"
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        
+        "contents": []
+      },
+      "footer": {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "button",
+            "style": "link",
+            "height": "sm",
+            "action": {
+              "type": "postback",
+              "label": "できた！",
+              "data": "complete"
+            }
+          },
+          {
+            "type": "button",
+            "style": "link",
+            "height": "sm",
+            "action": {
+              "type": "postback",
+              "label": "ダメだった…",
+              "data": "incomplete"
+            }
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [],
+            "margin": "sm"
+          }
+        ],
+        "flex": 0
+      }
+    }
+  end
+
+  
+
 end
