@@ -20,22 +20,105 @@ class WebhookController < ApplicationController
 
     events = client.parse_events_from(body)
     events.each { |event|
-      case event
-      when Line::Bot::Event::Message
-        case event.type
-        when Line::Bot::Event::MessageType::Text
+    case event
+    when Line::Bot::Event::Message
+      task = ChallengeTask.order('RANDOM()').first
+      case event.type
+      when Line::Bot::Event::MessageType::Text
+        if event.message['text'] == 'タスク'
           message = {
-            type: 'text',
-            text: event.message['text']
+            type:'flex',
+            altText:'今回のタスク',
+            contents:flex_message
+            
+          }
+          message[:contents][:body][:contents] << {
+            type:'text',
+            text:task.content,
+            align:'center'
+          }
+
+          client.reply_message(event['replyToken'], message)
+        end
+      
+      end
+
+      when Line::Bot::Event::Postback
+        case event['postback']['data']
+        when 'complete'
+          message = {
+            type:'text',
+            text:"タスクを達成しました！\nおめでとうございます！！"
           }
           client.reply_message(event['replyToken'], message)
-        when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
-          response = client.get_message_content(event.message['id'])
-          tf = Tempfile.open("content")
-          tf.write(response.body)
-        end
+        when 'incomplete'
+          message = {
+            type:'text',
+            text:"タスクは達成されませんでした…。\nそんな日もあります\n次はがんばりましょう！"
+          }
+          client.reply_message(event['replyToken'], message)
       end
+    end
+  }
+  head :ok
+  end
+
+  def flex_message
+    {
+      "type": "bubble",
+      "header": {
+        "type": "box",
+        "layout": "vertical",
+        "contents": [
+          {
+            "type": "text",
+            "text": "今回のタスク",
+            "weight": "bold",
+            "size": "xl",
+            "align": "center"
+          }
+        ]
+      },
+      "body": {
+        "type": "box",
+        "layout": "vertical",
+        
+        "contents": []
+      },
+      "footer": {
+        "type": "box",
+        "layout": "vertical",
+        "spacing": "sm",
+        "contents": [
+          {
+            "type": "button",
+            "style": "link",
+            "height": "sm",
+            "action": {
+              "type": "postback",
+              "label": "できた！",
+              "data": "complete"
+            }
+          },
+          {
+            "type": "button",
+            "style": "link",
+            "height": "sm",
+            "action": {
+              "type": "postback",
+              "label": "ダメだった…",
+              "data": "incomplete"
+            }
+          },
+          {
+            "type": "box",
+            "layout": "vertical",
+            "contents": [],
+            "margin": "sm"
+          }
+        ],
+        "flex": 0
+      }
     }
-    head :ok
   end
 end
