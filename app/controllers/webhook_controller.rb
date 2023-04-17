@@ -121,7 +121,4 @@ class WebhookController < ApplicationController
       }
     }
   end
-
-  
-
 end
