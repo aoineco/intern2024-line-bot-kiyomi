@@ -7,6 +7,7 @@
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
 
+
 ChallengeTask.find_or_create_by(content:"普段言わない人に感謝の気持ちを伝えよう！家族、友人、同僚誰でも構いません")
 ChallengeTask.find_or_create_by(content:"コミュニティ内で話さない人に話かけてみよう！")
 ChallengeTask.find_or_create_by(content:"店員さんと世間話をしてみよう！")
@@ -20,3 +21,4 @@ ChallengeTask.find_or_create_by(content:"地図アプリを使わずに目的地
 ChallengeTask.find_or_create_by(content:"１日利き手じゃない方の手を使って活動してみよう！（歯磨き、ドライヤーなど）")
 ChallengeTask.find_or_create_by(content:"明日はいつもより早く起きてみよう！早起きは三文の徳！")
 ChallengeTask.find_or_create_by(content:"いつもと違う場所で作業してみよう！（カフェ、リビング、図書館など）")  
+
