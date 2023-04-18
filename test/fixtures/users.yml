@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  userId: MyString
+  sum_complete: 1
+
+two:
+  userId: MyString
+  sum_complete: 1
