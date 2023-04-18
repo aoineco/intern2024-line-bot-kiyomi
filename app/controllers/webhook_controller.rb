@@ -20,36 +20,51 @@ class WebhookController < ApplicationController
 
     events = client.parse_events_from(body)
     events.each { |event|
-    case event
-    when Line::Bot::Event::Message
-      task = ChallengeTask.order('RANDOM()').first
-      case event.type
-      when Line::Bot::Event::MessageType::Text
-        if event.message['text'] == 'タスク'
-          message = {
-            type:'flex',
-            altText:'今回のタスク',
-            contents:flex_message
-            
-          }
-          message[:contents][:body][:contents] << {
-            type:'text',
-            text:task.content,
-            "wrap": true,
-            align:'center'
-          }
-
-          client.reply_message(event['replyToken'], message)
+      userId = event['source']['userId']
+      case event
+      when Line::Bot::Event::Message
+        # userId = event['source']['userId']
+        # puts userId
+        
+        task = ChallengeTask.order('RANDOM()').first
+        case event.type
+        when Line::Bot::Event::MessageType::Text
+          if event.message['text'] == 'タスク'
+            User.find_or_create_by(userId:userId)
+            message = {
+              type:'flex',
+              altText:'今回のタスク',
+              contents:flex_message
+              
+            }
+            message[:contents][:body][:contents] << {
+              type:'text',
+              text:task.content,
+              "wrap": true,
+              align:'center'
+            }
+            client.reply_message(event['replyToken'], message)
+          end
         end
-      
-      end
 
       when Line::Bot::Event::Postback
         case event['postback']['data']
         when 'complete'
+          if User.exists?(userId: userId)
+            # puts userId
+            user = User.find_by(userId:userId)
+            sum_complete = user.sum_complete
+            # puts sum_complete
+            # puts sum_complete
+            sum_complete += 1
+            user.update(sum_complete:sum_complete)
+            # puts sum_complete
+            
+          end
+          puts sum_complete
           message = {
             type:'text',
-            text:"タスクを達成しました！\nおめでとうございます！！"
+            text:"タスクを達成しました！\nおめでとうございます！！\n現在あなたの達成回数は#{sum_complete}回です！"
           }
           client.reply_message(event['replyToken'], message)
         when 'incomplete'
@@ -58,10 +73,10 @@ class WebhookController < ApplicationController
             text:"タスクは達成されませんでした…。\nそんな日もあります\n次はがんばりましょう！"
           }
           client.reply_message(event['replyToken'], message)
+        end
       end
-    end
-  }
-  head :ok
+    }
+    head :ok
   end
 
   def flex_message

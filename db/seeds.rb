@@ -6,7 +6,6 @@
 #   cities = City.create([{ name: 'Chicago' }, { name: 'Copenhagen' }])
 #   Mayor.create(name: 'Emanuel', city: cities.first)
 
-
 ChallengeTask.find_or_create_by(content:"普段言わない人に感謝の気持ちを伝えよう！家族、友人、同僚誰でも構いません")
 ChallengeTask.find_or_create_by(content:"コミュニティ内で話さない人に話かけてみよう！")
 ChallengeTask.find_or_create_by(content:"店員さんと世間話をしてみよう！")
