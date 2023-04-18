@@ -35,6 +35,9 @@ class WebhookController < ApplicationController
           message[:contents][:body][:contents] << {
             type:'text',
             text:task.content,
+
+            "wrap": true,
+
             align:'center'
           }
 
